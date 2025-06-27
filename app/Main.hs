@@ -1,18 +1,23 @@
+{-# LANGUAGE GADTs #-}
 module Main where
 
+import Data.Foldable ( for_ )
 import Text.Parsec
 import Text.ParserCombinators.Parsec.Number ( int )
 import Data.Either (fromRight)
 
-data Express a = App (Express a) (Express a) | Lam (Express a) | Express a deriving (Eq, Show)
+data Express a where
+  App :: (Express a) -> (Express a) -> Express a
+  Lam :: (Express a) -> Express a
+  Express :: a -> Express a
+  deriving (Eq, Show)
 
 main :: IO ()
-main = loop 0
+main = for_ [0..] loop
 
 loop n = do
   a <- getLine
-  putStrLn $ deParse $ applyReduction $ fromRight (Express (-69420)) $ parse myParser "" a
-  loop $ n + 1
+  putStrLn $ deParse $ applyReduction $ fromRight (Express (-1)) $ parse myParser "" a
 
 myParser = try $ Express <$> int <|> try lamParser <|> appParser
 
